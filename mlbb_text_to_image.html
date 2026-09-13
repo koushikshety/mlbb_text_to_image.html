@@ -190,24 +190,45 @@ Spell : Flicker</textarea>
 </div>
 
 <script>
-    function formatWikiName(name) {
-        if (!name) return '';
-        let clean = name.trim();
-        if (clean.toLowerCase() === 'custom assassin emblem') return 'Emblem_Custom_Assassin';
-        return clean.replace(/\s+/g, '_');
+    // Strictly uses logic from script_2.js to preserve correct local fallback paths
+    function getItemImageCandidates(itemName) {
+        if (!itemName) return [];
+        const cleanName = itemName.trim();
+        const formattedName = cleanName.replace(/\s+/g, '_').replace(/'/g, '%27');
+        
+        return [
+            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}.png`,
+            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}.jpg`,
+            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}_Talent.png`, // Covers talent naming format
+            `./assets/items/${formattedName.toLowerCase()}.png`, // Your repository's local fallback
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=1e293b&color=f59e0b&size=100&bold=true` // Final failsafe
+        ];
+    }
+
+    // Handles cascading fallbacks cleanly
+    function handleImageError(img) {
+        const name = img.dataset.name;
+        let index = parseInt(img.dataset.index);
+        const candidates = getItemImageCandidates(name);
+        
+        index++;
+        if (index < candidates.length) {
+            img.dataset.index = index;
+            img.src = candidates[index];
+        }
     }
 
     function createUniformCard(name) {
         const cleanName = name.trim();
-        const formatted = formatWikiName(cleanName);
-        
-        const rawWikiUrl = `https://mobilelegends.fandom.com/wiki/Special:FilePath/${formatted}.png`;
-        // Using a reliable thumbnail service that handles external game wiki hotlinks seamlessly
-        const imgUrl = cleanName ? `https://images.weserv.nl/?url=${encodeURIComponent(rawWikiUrl)}&w=120&h=120&fit=cover` : '';
+        const candidates = getItemImageCandidates(cleanName);
+        const primaryUrl = candidates[0];
+
+        // Safe name for dataset storage to prevent quote breaking
+        const safeName = cleanName.replace(/'/g, "\\'");
 
         return `
             <div class="uniform-card">
-                <img src="${imgUrl}" alt="${cleanName}" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://mobilelegends.fandom.com/wiki/Special:FilePath/${formatted}.png';">
+                <img src="${primaryUrl}" alt="${cleanName}" data-name="${safeName}" data-index="0" onerror="handleImageError(this)">
                 <div class="uniform-name">${cleanName || 'Empty'}</div>
             </div>
         `;
@@ -237,9 +258,9 @@ Spell : Flicker</textarea>
             }
         });
 
-        document.getElementById('itemOutput').innerHTML = items.map(i => createUniformCard(i)).join('');
-        document.getElementById('talentOutput').innerHTML = talents.map(t => createUniformCard(t)).join('');
-        document.getElementById('spellOutput').innerHTML = spells.map(s => createUniformCard(s)).join('');
+        document.getElementById('itemOutput').innerHTML = items.filter(Boolean).map(i => createUniformCard(i)).join('');
+        document.getElementById('talentOutput').innerHTML = talents.filter(Boolean).map(t => createUniformCard(t)).join('');
+        document.getElementById('spellOutput').innerHTML = spells.filter(Boolean).map(s => createUniformCard(s)).join('');
     }
 
     window.onload = parseAndRender;
