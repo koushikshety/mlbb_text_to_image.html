@@ -190,22 +190,27 @@ Spell : Flicker</textarea>
 </div>
 
 <script>
-    // Strictly uses logic from script_2.js to preserve correct local fallback paths
+    // Retrieves candidate paths based on script_2.js reference logic
     function getItemImageCandidates(itemName) {
         if (!itemName) return [];
         const cleanName = itemName.trim();
-        const formattedName = cleanName.replace(/\s+/g, '_').replace(/'/g, '%27');
+        let formattedName = cleanName.replace(/\s+/g, '_').replace(/'/g, '%27');
         
+        // Manual override for emblem
+        if (cleanName.toLowerCase() === 'custom assassin emblem') {
+            formattedName = 'Emblem_Custom_Assassin';
+        }
+
+        // Added '_Talent.png' as a candidate based on script_2.js getAssetImageUrl logic
         return [
             `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}.png`,
             `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}.jpg`,
-            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}_Talent.png`, // Covers talent naming format
-            `./assets/items/${formattedName.toLowerCase()}.png`, // Your repository's local fallback
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=1e293b&color=f59e0b&size=100&bold=true` // Final failsafe
+            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}_Talent.png`,
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=1e293b&color=f59e0b&size=100&bold=true`
         ];
     }
 
-    // Handles cascading fallbacks cleanly
+    // Handles cascading fallbacks natively if Fandom blocks a specific file type
     function handleImageError(img) {
         const name = img.dataset.name;
         let index = parseInt(img.dataset.index);
@@ -226,6 +231,7 @@ Spell : Flicker</textarea>
         // Safe name for dataset storage to prevent quote breaking
         const safeName = cleanName.replace(/'/g, "\\'");
 
+        // Removed crossorigin="anonymous" to allow Fandom redirects to function properly
         return `
             <div class="uniform-card">
                 <img src="${primaryUrl}" alt="${cleanName}" data-name="${safeName}" data-index="0" onerror="handleImageError(this)">
