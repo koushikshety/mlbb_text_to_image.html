@@ -76,6 +76,43 @@
         textarea:focus {
             outline: 1px solid var(--accent-gold);
         }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .btn-clear {
+            flex: 1;
+            background-color: #1e293b;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+        .btn-clear:hover {
+            background-color: #334155;
+            color: var(--text-main);
+        }
+        .btn-enter {
+            flex: 2;
+            background-color: var(--accent-gold);
+            color: #090d16;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8rem;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+            transition: opacity 0.2s;
+        }
+        .btn-enter:hover {
+            opacity: 0.9;
+        }
         
         /* OUTPUT SECTIONS */
         .section-title {
@@ -157,12 +194,14 @@
         <h1>blood leader$- SIV</h1>
     </header>
 
-    <!-- SINGLE INPUT FIELD -->
+    <!-- SINGLE INPUT FIELD WITH CLEAR & ENTER BUTTONS -->
     <div class="card">
         <div class="card-title">Loadout Configuration</div>
-        <textarea id="loadoutInput" onkeyup="parseAndRender()">Item : Swift Boots, Berserker's Fury, Endless Battle, Blade of Despair, Great Dragon Spear, Immortality
-Talent : Custom Assassin Emblem, Swift, Tenacity, Quantum Charge
-Spell : Flicker</textarea>
+        <textarea id="loadoutInput"></textarea>
+        <div class="btn-group">
+            <button class="btn-clear" onclick="clearInput()">Clear</button>
+            <button class="btn-enter" onclick="parseAndRender()">Enter / Update</button>
+        </div>
     </div>
 
     <!-- LIVE VISUAL DISPLAY -->
@@ -196,12 +235,17 @@ Spell : Flicker</textarea>
         const cleanName = itemName.trim();
         const formattedName = cleanName.replace(/\s+/g, '_').replace(/'/g, '%27');
         
+        let customFormatted = formattedName;
+        if (cleanName.toLowerCase() === 'custom assassin emblem') {
+            customFormatted = 'Emblem_Custom_Assassin';
+        }
+
         return [
-            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}.png`,
-            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}.jpg`,
-            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}_Talent.png`,
-            `./assets/items/${formattedName.toLowerCase()}.png`,
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=1e293b&color=f59e0b&size=100&bold=true`
+            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${customFormatted}_icon.png`,
+            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${customFormatted}.png`,
+            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${customFormatted}_Talent.png`,
+            `https://mobile-legends.fandom.com/wiki/Special:FilePath/Icon_${customFormatted}.png`,
+            `https://mobile-legends.fandom.com/wiki/Special:FilePath/${customFormatted}.jpg`
         ];
     }
 
@@ -215,7 +259,17 @@ Spell : Flicker</textarea>
             img.setAttribute('data-index', index);
             img.src = candidates[index];
         } else {
-            img.onerror = null;
+            const parent = img.parentElement;
+            const cleanName = img.alt || itemName;
+            const words = cleanName.split(' ');
+            const initials = words.length > 1 ? words[0][0] + words[1][0] : cleanName.substring(0, 2);
+            
+            const fallbackDiv = document.createElement('div');
+            fallbackDiv.className = 'uniform-card img';
+            fallbackDiv.style.cssText = 'width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--accent-gold); background-color: #1e293b; color: var(--accent-gold); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; margin: 0 auto 4px auto; box-shadow: 0 0 6px rgba(245, 158, 11, 0.3);';
+            fallbackDiv.textContent = initials.toUpperCase();
+            
+            parent.replaceChild(fallbackDiv, img);
         }
     };
 
@@ -230,6 +284,13 @@ Spell : Flicker</textarea>
                 <div class="uniform-name">${cleanName || 'Empty'}</div>
             </div>
         `;
+    }
+
+    function clearInput() {
+        document.getElementById('loadoutInput').value = '';
+        document.getElementById('itemOutput').innerHTML = '';
+        document.getElementById('talentOutput').innerHTML = '';
+        document.getElementById('spellOutput').innerHTML = '';
     }
 
     function parseAndRender() {
@@ -260,8 +321,6 @@ Spell : Flicker</textarea>
         document.getElementById('talentOutput').innerHTML = talents.filter(Boolean).map(t => createUniformCard(t)).join('');
         document.getElementById('spellOutput').innerHTML = spells.filter(Boolean).map(s => createUniformCard(s)).join('');
     }
-
-    window.onload = parseAndRender;
 </script>
 
 </body>
