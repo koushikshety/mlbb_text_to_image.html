@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>blood leader$- SIV</title>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --card-bg: #131c2e;
+            --accent-gold: #f59e0b;
+            --accent-blue: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 8px 10px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 4px;
+            margin-bottom: -2px;
+        }
+        header h1 {
+            color: var(--accent-gold);
+            margin: 0;
+            font-size: 1.35rem;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .card-title {
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        textarea {
+            width: 100%;
+            height: 95px;
+            padding: 8px;
+            background-color: #090d16;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 0.85rem;
+            resize: none;
+        }
+        textarea:focus {
+            outline: 1px solid var(--accent-gold);
+        }
+        
+        /* OUTPUT SECTIONS */
+        .section-title {
+            font-size: 0.75rem;
+            color: var(--accent-blue);
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 8px 0 4px 0;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        /* CENTERED DISPLAY CONTAINERS */
+        .output-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* UNIFORM ICON CARD STYLING */
+        .uniform-row {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .uniform-card {
+            background: #090d16;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+            width: 82px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .uniform-card img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-gold);
+            object-fit: cover;
+            background-color: #1e293b;
+            margin-bottom: 4px;
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.3);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .uniform-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 2px;
+            height: 2.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.1;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        /* 3 ITEMS PER ROW GRID STYLING (Centered) */
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            justify-content: center;
+            max-width: 270px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>blood leader$- SIV</h1>
+    </header>
+
+    <!-- SINGLE INPUT FIELD -->
+    <div class="card">
+        <div class="card-title">Loadout Configuration</div>
+        <textarea id="loadoutInput" onkeyup="parseAndRender()">Item : Swift Boots, Berserker's Fury, Endless Battle, Blade of Despair, Great Dragon Spear, Immortality
+Talent : Custom Assassin Emblem, Swift, Tenacity, Quantum Charge
+Spell : Flicker</textarea>
+    </div>
+
+    <!-- LIVE VISUAL DISPLAY -->
+    <div class="card">
+        <div class="card-title">Visual Output Display</div>
+        
+        <div>
+            <div class="section-title">Talents & Emblem</div>
+            <div class="output-container">
+                <div class="uniform-row" id="talentOutput"></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">Battle Spell</div>
+            <div class="output-container">
+                <div class="uniform-row" id="spellOutput"></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">Items (3 per row, 2 rows)</div>
+            <div class="item-grid" id="itemOutput"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function formatWikiName(name) {
+        if (!name) return '';
+        let clean = name.trim().replace(/\s+/g, '_');
+        return clean;
+    }
+
+    function createUniformCard(name) {
+        const cleanName = name.trim();
+        const formatted = formatWikiName(cleanName);
+        const imgUrl = cleanName ? `https://mobilelegends.fandom.com/wiki/Special:FilePath/${formatted}.png` : 'https://via.placeholder.com/52/1e293b/f59e0b?text=?';
+
+        return `
+            <div class="uniform-card">
+                <img src="${imgUrl}" alt="${cleanName}" onerror="this.src='https://via.placeholder.com/52/1e293b/f59e0b?text=Icon'">
+                <div class="uniform-name">${cleanName || 'Empty'}</div>
+            </div>
+        `;
+    }
+
+    function parseAndRender() {
+        const text = document.getElementById('loadoutInput').value;
+        const lines = text.split('\n');
+
+        let items = [];
+        let talents = [];
+        let spells = [];
+
+        lines.forEach(line => {
+            const parts = line.split(':');
+            if (parts.length < 2) return;
+
+            const key = parts[0].trim().toLowerCase();
+            const values = parts[1].split(',');
+
+            if (key.includes('item')) {
+                items = values;
+            } else if (key.includes('talent')) {
+                talents = values;
+            } else if (key.includes('spell')) {
+                spells = values;
+            }
+        });
+
+        document.getElementById('itemOutput').innerHTML = items.map(i => createUniformCard(i)).join('');
+        document.getElementById('talentOutput').innerHTML = talents.map(t => createUniformCard(t)).join('');
+        document.getElementById('spellOutput').innerHTML = spells.map(s => createUniformCard(s)).join('');
+    }
+
+    window.onload = parseAndRender;
+</script>
+
+</body>
+</html>
