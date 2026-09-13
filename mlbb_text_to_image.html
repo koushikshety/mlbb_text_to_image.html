@@ -192,8 +192,8 @@ Spell : Flicker</textarea>
 <script>
     function formatWikiName(name) {
         if (!name) return '';
-        let clean = name.trim().replace(/\s+/g, '_');
-        return clean;
+        let clean = name.trim();
+        return clean.replace(/\s+/g, '_');
     }
 
     function createUniformCard(name) {
@@ -203,7 +203,7 @@ Spell : Flicker</textarea>
 
         return `
             <div class="uniform-card">
-                <img src="${imgUrl}" alt="${cleanName}" onerror="this.src='https://via.placeholder.com/52/1e293b/f59e0b?text=Icon'">
+                <img src="${imgUrl}" alt="${cleanName}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/52/1e293b/f59e0b?text=Icon'">
                 <div class="uniform-name">${cleanName || 'Empty'}</div>
             </div>
         `;
