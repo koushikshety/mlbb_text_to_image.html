@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
     <title>blood leader$- SIV</title>
     <style>
         :root {
@@ -190,51 +191,42 @@ Spell : Flicker</textarea>
 </div>
 
 <script>
-    // Retrieves candidate paths based on script_2.js reference logic
     function getItemImageCandidates(itemName) {
         if (!itemName) return [];
         const cleanName = itemName.trim();
-        let formattedName = cleanName.replace(/\s+/g, '_').replace(/'/g, '%27');
+        const formattedName = cleanName.replace(/\s+/g, '_').replace(/'/g, '%27');
         
-        // Manual override for emblem
-        if (cleanName.toLowerCase() === 'custom assassin emblem') {
-            formattedName = 'Emblem_Custom_Assassin';
-        }
-
-        // Added '_Talent.png' as a candidate based on script_2.js getAssetImageUrl logic
         return [
             `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}.png`,
             `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}.jpg`,
             `https://mobile-legends.fandom.com/wiki/Special:FilePath/${formattedName}_Talent.png`,
+            `./assets/items/${formattedName.toLowerCase()}.png`,
             `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=1e293b&color=f59e0b&size=100&bold=true`
         ];
     }
 
-    // Handles cascading fallbacks natively if Fandom blocks a specific file type
-    function handleImageError(img) {
-        const name = img.dataset.name;
-        let index = parseInt(img.dataset.index);
-        const candidates = getItemImageCandidates(name);
+    window.handleImageError = function(img) {
+        const itemName = img.dataset.name;
+        let index = parseInt(img.getAttribute('data-index')) || 0;
+        const candidates = getItemImageCandidates(itemName);
         
         index++;
         if (index < candidates.length) {
-            img.dataset.index = index;
+            img.setAttribute('data-index', index);
             img.src = candidates[index];
+        } else {
+            img.onerror = null;
         }
-    }
+    };
 
     function createUniformCard(name) {
         const cleanName = name.trim();
         const candidates = getItemImageCandidates(cleanName);
         const primaryUrl = candidates[0];
 
-        // Safe name for dataset storage to prevent quote breaking
-        const safeName = cleanName.replace(/'/g, "\\'");
-
-        // Removed crossorigin="anonymous" to allow Fandom redirects to function properly
         return `
             <div class="uniform-card">
-                <img src="${primaryUrl}" alt="${cleanName}" data-name="${safeName}" data-index="0" onerror="handleImageError(this)">
+                <img src="${primaryUrl}" alt="${cleanName}" data-index="0" data-name="${cleanName}" onerror="window.handleImageError(this)">
                 <div class="uniform-name">${cleanName || 'Empty'}</div>
             </div>
         `;
