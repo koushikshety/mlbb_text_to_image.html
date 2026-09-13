@@ -193,17 +193,21 @@ Spell : Flicker</textarea>
     function formatWikiName(name) {
         if (!name) return '';
         let clean = name.trim();
+        if (clean.toLowerCase() === 'custom assassin emblem') return 'Emblem_Custom_Assassin';
         return clean.replace(/\s+/g, '_');
     }
 
     function createUniformCard(name) {
         const cleanName = name.trim();
         const formatted = formatWikiName(cleanName);
-        const imgUrl = cleanName ? `https://mobilelegends.fandom.com/wiki/Special:FilePath/${formatted}.png` : 'https://via.placeholder.com/52/1e293b/f59e0b?text=?';
+        
+        const rawWikiUrl = `https://mobilelegends.fandom.com/wiki/Special:FilePath/${formatted}.png`;
+        // Using a reliable thumbnail service that handles external game wiki hotlinks seamlessly
+        const imgUrl = cleanName ? `https://images.weserv.nl/?url=${encodeURIComponent(rawWikiUrl)}&w=120&h=120&fit=cover` : '';
 
         return `
             <div class="uniform-card">
-                <img src="${imgUrl}" alt="${cleanName}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/52/1e293b/f59e0b?text=Icon'">
+                <img src="${imgUrl}" alt="${cleanName}" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://mobilelegends.fandom.com/wiki/Special:FilePath/${formatted}.png';">
                 <div class="uniform-name">${cleanName || 'Empty'}</div>
             </div>
         `;
